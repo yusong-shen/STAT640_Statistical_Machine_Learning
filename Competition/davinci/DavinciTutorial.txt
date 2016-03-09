@@ -1,0 +1,116 @@
+# All this info and more can be found at
+#  https://docs.rice.edu/confluence/display/ITDIY/Getting+Started+on+DAVinCI
+
+##### Logging In
+# See: Introduction
+
+# login to davinci using ssh (mac/linux) or putty (windows)
+# use netid/password
+ssh YourNetID@davinci.rice.edu
+
+# once your logged in type:
+hostname
+# should output something like: loginX.davinci.rice.edu
+# This means you're at a login node
+# !Do NOT run jobs here!
+# Login nodes are for:
+# 	editing files
+#	basic data prep
+#	submitting jobs 
+
+
+
+
+##### Module Basics
+# See: The Moudle Command
+
+# Try to run R here:
+R
+# should error: command not found
+# we haven't loaded R "module" yet
+# show the loaded modules:
+module list
+# type 'q' to exit listing
+# search for R module
+module spider R
+# There are several versions; pick recent and load it
+module load R/3.2.1
+# should error: cannot load
+# find out why
+module spider R/3.2.1
+# need to load GCC/4.4.7 and OpenMPI/1.8.6 (have gcc already)
+module load OpenMPI/1.8.6 R/3.2.1
+# Now run R
+R
+# should get R prompt
+# !Do NOT run jobs in login node!
+
+
+
+##### Storage Basics
+# See: Data and Quotas
+
+# We have a class folder
+ls /projects/stat640/
+# The directory Fall2015_Data contains all the files on kaggle
+# You can read these files, but cannot alter them or write in the directory
+
+# You can store output (predictions/intermediate files/etc) on davinci as well
+# you can store in
+# 	* your home directory (4GB quota)
+# 	* /scratch/ directory (temporary storage - high performance)
+# 	* /tmp/ directory (temporary storage - job specific)
+# 	* /work/stat640 course-wide storage
+
+# If using shared storage (/scratch/, /tmp/, /work/stat640/) create your own directory
+# and store there. Don't clutter the directories for others
+#
+# Check your home directory usage with
+quota -s
+
+
+
+
+##### Submitting Jobs
+# See: The Job Scheduler and Submitting Jobs
+
+# Again jobs cannot be run directly in the login node.
+# Instead we
+# 	* Create R/Python/MATLAB/etc. script to do analysis (BasicRScript.R)
+# 	* Load necessary modules in login node (say module load OpenMPI/1.8.6 R/3.2.1)
+# 	* Create another script to submit the work (BasicSubmitScript.slurm)
+
+# Before we look at submitting jobs let's look at getting an interactive node
+# Once on an interactive node we can run R scripts which use memory and computing power
+# First load modules in login node
+module load OpenMPI/1.8.6 R/3.2.1
+# Get interacitve node:
+srun --pty --partition=interactive --ntasks=1 --mem=5G --time=00:10:00 $SHELL
+# this put us on an interactive node
+hostname
+ls
+pwd
+# note we still have our home directory and all that
+# now run R
+R
+# here we can run scripts and debug code
+# in R console:
+source("BasicRScript.R")
+# Exit R once done
+q()
+# Then exit interactive node
+exit
+hostname
+# should be back to login node
+# Interactive nodes are great for debugging code and running small test cases before submitting
+
+
+# We can also run scripts by submitting jobs (non-interactive)
+# Examine the BasicSubmitScript.slurm which runs BasicRScript.R
+# Submit the job with
+sbatch BasicSubmitScript.slurm
+# This will send job to compute node
+# Examine the running jobs with
+squeue -u YourNetID
+scontrol show job SOMEJOBID
+
